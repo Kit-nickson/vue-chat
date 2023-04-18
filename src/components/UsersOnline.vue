@@ -14,12 +14,10 @@
 
 <style scoped>
     .users-online {
-        position: absolute;
-        top: 0;
-        right: 0;
         width: 250px;
         background: #224;
         height: 100vh;
+        z-index: 10;
     }
     .users-online  h2 {
         text-align: center;
@@ -30,15 +28,20 @@
         display: flex;
         flex-direction: column;
         list-style: none;
-        padding: 0 10px;
+        padding: 0;
     }
-
+    
     .users-online ul li {
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-top: 10px;
+        padding: 10px;
+        transition: background .2s;
     }
+    .users-online ul li:hover {
+        background: #446;
+     }
 
     .status {
         border-radius: 100%;

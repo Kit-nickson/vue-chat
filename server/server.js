@@ -15,6 +15,11 @@ io.on("connection", (socket) => {
     io.emit('users-online', usersOnline);
   })
 
+  socket.on('message', (message) => {
+    console.log(message);
+    io.emit(message);
+  })
+
 
   socket.on("disconnect", (reason) => {
     delete usersOnline[socket.id];

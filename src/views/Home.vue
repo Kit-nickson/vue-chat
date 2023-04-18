@@ -1,7 +1,8 @@
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, provide } from 'vue';
   import router from '../router';
   import UsersOnline from '../components/UsersOnline.vue';
+  import Chat from '../components/Chat.vue'
 
   import { io } from "socket.io-client";
 
@@ -10,12 +11,14 @@
   const userId = ref('');
   const usersOnlineObject = ref({});
 
-  let socket = null;
+  let socket = ref(null);
 
+  provide('socket', socket);
 
   onMounted(() => {
     checkAuth();
   })
+
 
   function checkAuth() {
     if (!isUserAuth('Auth')) {
@@ -67,37 +70,94 @@
 
 
   function connectToChat() {
-    socket = io("http://localhost:3000");
-
-    socket.on('connect', () => {
-      socket.emit('user-data', {
+    socket.value = io("http://localhost:3000");
+    
+    socket.value.on('connect', () => {
+      socket.value.emit('user-data', {
         username: username.value,
         userId: userId.value
       });
+
+  })
+
+    socket.value.on('users-online', (usersOnline) => {
+      usersOnlineObject.value = usersOnline;
     })
 
-    socket.on('users-online', (usersOnline) => {
-      usersOnlineObject.value = usersOnline;
-
-      for (const key in usersOnlineObject.value) {
-        console.log(usersOnlineObject.value[key].username+" : "+usersOnlineObject.value[key].userId);
-      }
+    socket.value.on('message', (message) => {
+      console.log('1234');
+      console.log(message);
     })
   }
 
 </script>
 
 <template>
-  <h1>Home</h1>
-  <h3>Hello {{ username }}</h3>
+  <div class="container">
+    <div class="content">
+      <header>
+        <h1>Hello {{ username }}</h1>
+        <button class="logout-btn" @click="logoutUser">Logout</button>
+      </header>
 
-  <UsersOnline :usersOnline="usersOnlineObject" />
+      <div class="chat">
+        <Chat />
+      </div>
+    </div>
+    <UsersOnline :usersOnline="usersOnlineObject" />
+  </div>
   
-  <button @click="logoutUser">Logout</button>
 </template>
 
 <style scoped>
-  .status {
-    color: rgb(8, 128, 58);
+  .container {
+    display: flex;
   }
+
+  header {
+    background: #113;
+    text-align: center;
+    max-height: 100px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .chat {
+    display: flex;
+    flex: 1;
+  }
+
+  header .logout-btn {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    height: 40px;
+    width: 100px;
+    transform: translate(0, -50%);
+    font-size: 1.2em;
+    border-radius: 10px;
+    background: #335;
+    color: white;
+    border: none;
+    outline: none;
+    transition: background .2s;
+  }
+  
+  header .logout-btn:hover { 
+    background: rgb(69, 69, 114);
+    cursor: pointer;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+  }
+
+
 </style>
