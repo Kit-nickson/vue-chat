@@ -1,39 +1,36 @@
 <script setup>
-    import { ref, watch, inject } from 'vue';
+    import { ref, computed } from 'vue';
+    import { socket } from "@/socket";
     
+    const props = defineProps(['messages', 'username']);
+
+    const { username } = props;
+
     const message = ref('');
-    const messages = ref([]);
-
-    let socket = inject('socket');
-
-    watch(socket, () => {
-        socket = socket.value;
-    })
     
     function sendMessage() {
-        socket.emit('message', { message: message.value });
-        
-        socket.on('message', (data) => {
-            console.log('1234');
-            messages.value.push(data);
+        socket.emit('message', { 
+            message: message.value,
+            from: username
+        });
 
-            console.log(messages);
-        })
+        message.value = '';
     }
 
 </script>
 
-
 <template>
     <div class="chat-container">
         <h1>Chat</h1>
-        <div class="messages-display" v-for="message in messages">
-            <p>{{ message.message }}</p>
+        <div class="messages-display">
+            <div v-for="message in messages">
+                <p>{{ message.message }}</p>
+            </div>
         </div>
-        <div class="write-msg">
+        <form @submit.prevent="sendMessage" class="write-msg">
             <input type="text" v-model="message">
-            <button @click="sendMessage">Send</button>
-        </div>
+            <button>Send</button>            
+        </form>
     </div>
 </template>
 

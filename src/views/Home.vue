@@ -1,24 +1,18 @@
 <script setup>
-  import { ref, onMounted, provide } from 'vue';
+  import { ref, onMounted } from 'vue';
   import router from '../router';
   import UsersOnline from '../components/UsersOnline.vue';
   import Chat from '../components/Chat.vue'
+  import { socket } from "@/socket";
 
-  import { io } from "socket.io-client";
-
-  const connectionStatus = ref(false);
   const username = ref('');
   const userId = ref('');
   const usersOnlineObject = ref({});
-
-  let socket = ref(null);
-
-  provide('socket', socket);
+  const messages = ref([]);
 
   onMounted(() => {
     checkAuth();
   })
-
 
   function checkAuth() {
     if (!isUserAuth('Auth')) {
@@ -69,24 +63,22 @@
   }
 
 
-  function connectToChat() {
-    socket.value = io("http://localhost:3000");
+  function connectToChat() {   
+    socket.connect();
     
-    socket.value.on('connect', () => {
-      socket.value.emit('user-data', {
+    socket.on('connect', () => {
+      socket.emit('user-data', {
         username: username.value,
         userId: userId.value
       });
+    })
 
-  })
-
-    socket.value.on('users-online', (usersOnline) => {
+    socket.on('users-online', (usersOnline) => {
       usersOnlineObject.value = usersOnline;
     })
 
-    socket.value.on('message', (message) => {
-      console.log('1234');
-      console.log(message);
+    socket.on('message', (message) => {
+      messages.value.push(message);
     })
   }
 
@@ -101,7 +93,7 @@
       </header>
 
       <div class="chat">
-        <Chat />
+        <Chat :messages="messages" :username="username" />
       </div>
     </div>
     <UsersOnline :usersOnline="usersOnlineObject" />
