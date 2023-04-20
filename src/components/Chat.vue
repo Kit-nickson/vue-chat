@@ -1,22 +1,21 @@
 <script setup>
-    import { ref, computed } from 'vue';
+    import { ref, computed, watch } from 'vue';
     import { socket } from "@/socket";
     
-    const props = defineProps(['messages', 'username']);
-
-    const { username } = props;
+    const props = defineProps(['messages', 'currentUserData']);
 
     const message = ref('');
+
+    const currentUser = computed(() => props.currentUserData);
     
     function sendMessage() {
         socket.emit('message', { 
             message: message.value,
-            from: username
+            from: currentUser.value,
         });
 
         message.value = '';
     }
-
 </script>
 
 <template>
@@ -24,7 +23,7 @@
         <h1>Chat</h1>
         <div class="messages-display">
             <div v-for="message in messages">
-                <p>{{ message.message }}</p>
+                <p><strong>{{ message.from.username }} </strong>: {{ message.message }}</p>
             </div>
         </div>
         <form @submit.prevent="sendMessage" class="write-msg">
@@ -74,6 +73,11 @@
     }
     .write-msg button:hover { 
         background: rgb(255, 183, 50);
+    }
+
+    strong {
+        color: red;
+        font-weight: bold;
     }
         
 

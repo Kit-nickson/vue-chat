@@ -5,23 +5,20 @@
   import Chat from '../components/Chat.vue'
   import { socket } from "@/socket";
 
-  const username = ref('');
-  const userId = ref('');
+  const currentUserData = ref('');
   const usersOnlineObject = ref({});
   const messages = ref([]);
 
+  
   onMounted(() => {
     checkAuth();
   })
-
+  
   function checkAuth() {
     if (!isUserAuth('Auth')) {
       router.push('login');
     } else {
-      const userObject = getLoggedUser();
-  
-      username.value = userObject.username;
-      userId.value = userObject.userId;
+      currentUserData.value = getLoggedUser();
       connectToChat();
     }
   }
@@ -67,10 +64,7 @@
     socket.connect();
     
     socket.on('connect', () => {
-      socket.emit('user-data', {
-        username: username.value,
-        userId: userId.value
-      });
+      socket.emit('user-data', currentUserData.value);
     })
 
     socket.on('users-online', (usersOnline) => {
@@ -88,12 +82,12 @@
   <div class="container">
     <div class="content">
       <header>
-        <h1>Hello {{ username }}</h1>
+        <h1>Hello {{ currentUserData.username }}</h1>
         <button class="logout-btn" @click="logoutUser">Logout</button>
       </header>
 
       <div class="chat">
-        <Chat :messages="messages" :username="username" />
+        <Chat :messages="messages" :currentUserData="currentUserData" />
       </div>
     </div>
     <UsersOnline :usersOnline="usersOnlineObject" />
@@ -150,6 +144,5 @@
     flex: 1;
     height: 100vh;
   }
-
-
+  
 </style>
