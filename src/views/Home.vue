@@ -71,8 +71,8 @@
       usersOnlineObject.value = usersOnline;
     })
 
-    socket.on('message', (message) => {
-      messages.value.push(message);
+    socket.on('message', (messagesFromSocket) => {
+      messages.value = messagesFromSocket;
     })
   }
 
