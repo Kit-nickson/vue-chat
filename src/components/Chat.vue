@@ -2,11 +2,12 @@
     import { ref, computed } from 'vue';
     import { socket } from "@/socket";
     
-    const props = defineProps(['messages', 'currentUserData']);
+    const props = defineProps(['messages', 'currentUserData', 'selectedUser']);
 
     const message = ref('');
 
     const currentUser = computed(() => props.currentUserData);
+    const selectedUser = computed(() => props.selectedUser);
     
     function sendMessage() {
         socket.emit('message', { 
@@ -20,7 +21,8 @@
 
 <template>
     <div class="chat-container">
-        <h1>Chat</h1>
+        <h1 v-if="!selectedUser">Chat</h1>
+        <h1 v-else="selectedUser">Chat with {{ selectedUser.username }}</h1>
         <div class="messages-display">
             <div v-for="message in messages">
                 <p><strong>{{ message.from.username }} </strong>: {{ message.message }}</p>

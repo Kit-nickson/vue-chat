@@ -8,6 +8,7 @@
   const currentUserData = ref('');
   const usersOnlineObject = ref({});
   const messages = ref([]);
+  const selectedUser = ref(null);
 
   
   onMounted(() => {
@@ -76,6 +77,18 @@
     })
   }
 
+
+  function selectUser(e) {
+    console.log();
+
+    const selectedUserObject = {
+      username: e.target.innerText,
+      id: e.target.dataset.id
+    }
+
+    selectedUser.value = selectedUserObject;
+  }
+
 </script>
 
 <template>
@@ -87,10 +100,10 @@
       </header>
 
       <div class="chat">
-        <Chat :messages="messages" :currentUserData="currentUserData" />
+        <Chat :messages="messages" :current-user-data="currentUserData" :selected-user="selectedUser"/>
       </div>
     </div>
-    <UsersOnline :usersOnline="usersOnlineObject" />
+    <UsersOnline :usersOnline="usersOnlineObject" @select-user="selectUser" />
   </div>
   
 </template>

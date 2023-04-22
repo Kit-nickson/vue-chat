@@ -9,5 +9,6 @@
   body {
     background: #335;
     color: white;
+    user-select: none;
   }
 </style>

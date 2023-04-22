@@ -19,7 +19,6 @@ io.on("connection", (socket) => {
 
   socket.on('message', (message) => {
     messages.push(message);
-    console.log(messages);
     io.emit('message', messages);
   })
 

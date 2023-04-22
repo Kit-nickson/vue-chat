@@ -7,7 +7,7 @@
         <h2>Users Online</h2>
         
         <ul v-for="userOnline in usersOnline">
-          <li>{{ userOnline.username }}<div class="status"></div></li>
+          <li @click="$emit('selectUser', $event)" :data-id="userOnline.userId">{{ userOnline.username }}<div class="status"></div></li>
         </ul>
   </div>
 </template>
@@ -30,7 +30,7 @@
         list-style: none;
         padding: 0;
     }
-    
+
     .users-online ul li {
         display: flex;
         align-items: center;
@@ -41,6 +41,7 @@
     }
     .users-online ul li:hover {
         background: #446;
+        cursor: pointer;
      }
 
     .status {
