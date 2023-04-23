@@ -7,7 +7,7 @@
 
   const currentUserData = ref('');
   const usersOnlineObject = ref({});
-  const messages = ref([]);
+  const messages = ref({});
   const selectedUser = ref(null);
 
   
@@ -66,21 +66,23 @@
     
     socket.on('connect', () => {
       socket.emit('user-data', currentUserData.value);
-    })
-
-    socket.on('users-online', (usersOnline) => {
-      usersOnlineObject.value = usersOnline;
-    })
-
-    socket.on('message', (messagesFromSocket) => {
-      messages.value = messagesFromSocket;
+      
+      socket.on('users-online', (usersOnline) => {
+        usersOnlineObject.value = usersOnline;
+      })
+      
+      socket.on('message', (messagesFromSocket) => {
+        messages.value = messagesFromSocket;
+      });
+    
+      socket.on('private-message', (message) => {
+        console.log(message);
+      })
     })
   }
 
 
   function selectUser(e) {
-    console.log();
-
     const selectedUserObject = {
       username: e.target.innerText,
       id: e.target.dataset.id
@@ -100,7 +102,7 @@
       </header>
 
       <div class="chat">
-        <Chat :messages="messages" :current-user-data="currentUserData" :selected-user="selectedUser"/>
+        <Chat :messages="messages.main" :current-user-data="currentUserData" :selected-user="selectedUser"/>
       </div>
     </div>
     <UsersOnline :usersOnline="usersOnlineObject" @select-user="selectUser" />

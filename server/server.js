@@ -5,7 +5,9 @@ const httpServer = createServer();
 const io = new Server(httpServer, { cors: { origin: '*' } });
 
 const usersOnline = {};
-const messages = [];
+const messages = {
+  main: []
+};
 
 io.on("connection", (socket) => {
 
@@ -18,8 +20,13 @@ io.on("connection", (socket) => {
   })
 
   socket.on('message', (message) => {
-    messages.push(message);
+    messages.main.push(message);
     io.emit('message', messages);
+  });
+
+  socket.on('private-message', (message) => {
+    messages.private.push(message);
+    io.to(message.to.id).emit(message);
   })
 
 

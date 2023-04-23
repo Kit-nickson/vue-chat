@@ -6,14 +6,24 @@
 
     const message = ref('');
 
+    const messages = computed(() => props.messages);
     const currentUser = computed(() => props.currentUserData);
     const selectedUser = computed(() => props.selectedUser);
     
     function sendMessage() {
-        socket.emit('message', { 
-            message: message.value,
-            from: currentUser.value,
-        });
+
+        if (!selectedUser.value) {
+            socket.emit('message', { 
+                message: message.value,
+                from: currentUser.value,
+            });
+        } else {
+            socket.emit('private-message', {
+                message: message.value,
+                from: currentUser.value,
+                to: selectedUser.value.id
+            });
+        }
 
         message.value = '';
     }
