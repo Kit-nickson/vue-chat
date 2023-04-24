@@ -8,7 +8,9 @@
   const currentUserData = ref('');
   const usersOnlineObject = ref({});
   const messages = ref({});
+  const privateMessages = ref({});
   const selectedUser = ref(null);
+  const commonId = ref(null);
 
   
   onMounted(() => {
@@ -74,9 +76,9 @@
       socket.on('message', (messagesFromSocket) => {
         messages.value = messagesFromSocket;
       });
-    
-      socket.on('private-message', (message) => {
-        console.log(message);
+      
+      socket.on('private-message', (privateMessagesData) => {
+        privateMessages.value[privateMessagesData[0]] = privateMessagesData[1];
       })
     })
   }
@@ -87,6 +89,10 @@
       username: e.target.innerText,
       id: e.target.dataset.id
     }
+
+    commonId.value = [selectedUserObject.id, currentUserData.value.userId].sort().join('-');
+
+    socket.emit('join-room', commonId.value);
 
     selectedUser.value = selectedUserObject;
   }
@@ -102,7 +108,8 @@
       </header>
 
       <div class="chat">
-        <Chat :messages="messages.main" :current-user-data="currentUserData" :selected-user="selectedUser"/>
+        <Chat v-if="!selectedUser" :messages="messages" :current-user-data="currentUserData" :selected-user="selectedUser"/>
+        <Chat v-else :private-messages="privateMessages" :commonId="commonId" :current-user-data="currentUserData" :selected-user="selectedUser"/>
       </div>
     </div>
     <UsersOnline :usersOnline="usersOnlineObject" @select-user="selectUser" />

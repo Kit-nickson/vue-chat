@@ -2,16 +2,18 @@
     import { ref, computed } from 'vue';
     import { socket } from "@/socket";
     
-    const props = defineProps(['messages', 'currentUserData', 'selectedUser']);
+    const props = defineProps(['messages', 'privateMessages', 'commonId', 'currentUserData', 'selectedUser']);
 
     const message = ref('');
 
     const messages = computed(() => props.messages);
+    const privateMessages = computed(() => props.privateMessages);
     const currentUser = computed(() => props.currentUserData);
     const selectedUser = computed(() => props.selectedUser);
+    const commonId = computed(() => props.commonId);
     
     function sendMessage() {
-
+        
         if (!selectedUser.value) {
             socket.emit('message', { 
                 message: message.value,
@@ -24,7 +26,6 @@
                 to: selectedUser.value.id
             });
         }
-
         message.value = '';
     }
 </script>
@@ -33,10 +34,17 @@
     <div class="chat-container">
         <h1 v-if="!selectedUser">Chat</h1>
         <h1 v-else="selectedUser">Chat with {{ selectedUser.username }}</h1>
+        
         <div class="messages-display">
-            <div v-for="message in messages">
+            
+            <div v-if="!selectedUser" v-for="message in messages">
                 <p><strong>{{ message.from.username }} </strong>: {{ message.message }}</p>
             </div>
+
+            <div v-else v-for="message in privateMessages[commonId]">
+                <p><strong>{{ message.from.username }} </strong>: {{ message.message }}</p>
+            </div>
+
         </div>
         <form @submit.prevent="sendMessage" class="write-msg">
             <input type="text" v-model="message">
