@@ -1,5 +1,15 @@
 <script setup>
-    defineProps(['usersOnline']);
+    import { computed } from 'vue';
+
+    const props = defineProps(['usersOnline', 'notifications']);
+
+    const notifications = computed(() => props.notifications);
+
+    function notification(userId) {
+        if (notifications.value.includes(userId)) {
+            return 'notification';
+        }
+    }
 </script>
 
 <template>
@@ -7,7 +17,7 @@
         <h2>Users Online</h2>
         
         <ul v-for="userOnline in usersOnline">
-          <li @click="$emit('selectUser', $event)" :data-id="userOnline.userId">{{ userOnline.username }}<div class="status"></div></li>
+          <li @click="$emit('selectUser', $event)" :data-id="userOnline.userId">{{ userOnline.username }}<div class="status" :class="notification(userOnline.userId)"></div></li>
         </ul>
   </div>
 </template>
@@ -51,6 +61,16 @@
         width: 10px;
         border: none;
         outline: none;
+    }
+
+    .notification {
+        animation: notification 2s infinite linear alternate;
+    }
+
+    @keyframes notification {
+        100% {
+            background: red;
+        }
     }
 
 </style>

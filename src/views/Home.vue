@@ -11,6 +11,7 @@
   const privateMessages = ref({});
   const selectedUser = ref(null);
   const commonId = ref(null);
+  const notifications = ref([]);
 
   
   onMounted(() => {
@@ -80,6 +81,10 @@
       socket.on('private-message', (privateMessagesData) => {
         privateMessages.value[privateMessagesData[0]] = privateMessagesData[1];
       })
+
+      socket.on('notification', (from) => {
+        notifications.value.push(from);
+      })
     })
   }
 
@@ -112,7 +117,7 @@
         <Chat v-else :private-messages="privateMessages" :commonId="commonId" :current-user-data="currentUserData" :selected-user="selectedUser"/>
       </div>
     </div>
-    <UsersOnline :usersOnline="usersOnlineObject" @select-user="selectUser" />
+    <UsersOnline :usersOnline="usersOnlineObject" :notifications="notifications" @select-user="selectUser" />
   </div>
   
 </template>

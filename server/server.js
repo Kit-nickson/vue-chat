@@ -14,6 +14,7 @@ io.on("connection", (socket) => {
   io.emit('message', messages);
 
   socket.on('user-data', (data) => {
+    socket.join(data.userId);
     usersOnline[socket.id] = data;
     
     io.emit('users-online', usersOnline);
@@ -46,6 +47,7 @@ io.on("connection", (socket) => {
     }
 
     io.to(commonId).emit('private-message', [commonId, privateMessages[commonId]]);
+    io.to(message.to).emit('notification', message.from.userId);
   })
 
 
