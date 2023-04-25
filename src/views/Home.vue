@@ -90,16 +90,16 @@
 
 
   function selectUser(e) {
-    const selectedUserObject = {
+    selectedUser.value = {
       username: e.target.innerText,
       id: e.target.dataset.id
     }
 
-    commonId.value = [selectedUserObject.id, currentUserData.value.userId].sort().join('-');
+    commonId.value = [selectedUser.value.id, currentUserData.value.userId].sort().join('-');
 
     socket.emit('join-room', commonId.value);
 
-    selectedUser.value = selectedUserObject;
+    notifications.value = notifications.value.filter(item => item !== selectedUser.value.id)
   }
 
 </script>
@@ -113,11 +113,28 @@
       </header>
 
       <div class="chat">
-        <Chat v-if="!selectedUser" :messages="messages" :current-user-data="currentUserData" :selected-user="selectedUser"/>
-        <Chat v-else :private-messages="privateMessages" :commonId="commonId" :current-user-data="currentUserData" :selected-user="selectedUser"/>
+        <Chat v-if="!selectedUser" 
+          :messages="messages" 
+          :current-user-data="currentUserData" 
+          :selected-user="selectedUser" 
+        />
+
+        <Chat v-else 
+          :private-messages="privateMessages" 
+          :commonId="commonId" 
+          :current-user-data="currentUserData" 
+          :selected-user="selectedUser" 
+        />
+
       </div>
     </div>
-    <UsersOnline :usersOnline="usersOnlineObject" :notifications="notifications" @select-user="selectUser" />
+
+    <UsersOnline :usersOnline="usersOnlineObject" 
+      :current-user="currentUserData" 
+      :selectedUser="selectedUser" 
+      :notifications="notifications" 
+      @select-user="selectUser" 
+      />
   </div>
   
 </template>

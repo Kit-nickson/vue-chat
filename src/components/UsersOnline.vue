@@ -1,13 +1,30 @@
 <script setup>
     import { computed } from 'vue';
 
-    const props = defineProps(['usersOnline', 'notifications']);
+    const props = defineProps(['usersOnline', 'selectedUser', 'currentUser', 'notifications']);
 
     const notifications = computed(() => props.notifications);
+    const selectedUser = computed(() => props.selectedUser);
+    const currentUser = computed(() => props.currentUser);
 
     function notification(userId) {
+        if (selectedUser.value !== null && selectedUser.value.id === userId) {
+            return;
+        }
         if (notifications.value.includes(userId)) {
             return 'notification';
+        }
+    }
+
+    function showSelectedUser(userId) {
+        if (selectedUser.value !== null && selectedUser.value.id === userId) {
+            return 'selected-user'
+        }
+    }
+
+    function showCurrentUser(userId) {
+        if (currentUser.value.userId === userId) {
+            return 'current-user'
         }
     }
 </script>
@@ -17,7 +34,13 @@
         <h2>Users Online</h2>
         
         <ul v-for="userOnline in usersOnline">
-          <li @click="$emit('selectUser', $event)" :data-id="userOnline.userId">{{ userOnline.username }}<div class="status" :class="notification(userOnline.userId)"></div></li>
+            <li @click="$emit('selectUser', $event)" 
+                :data-id="userOnline.userId"
+                :class="showSelectedUser(userOnline.userId) + ' ' + showCurrentUser(userOnline.userId) + ' ' + notification(userOnline.userId)"
+                >
+                {{ userOnline.username }}
+                <div class="status"></div>
+            </li>
         </ul>
   </div>
 </template>
@@ -50,7 +73,7 @@
         transition: background .2s;
     }
     .users-online ul li:hover {
-        background: #446;
+        background: rgb(152, 74, 96);
         cursor: pointer;
      }
 
@@ -63,14 +86,22 @@
         outline: none;
     }
 
+    .current-user {
+        background: rgb(46, 46, 154);
+    }
+
+    .selected-user {
+        background: rgb(126, 54, 75);
+    }
+
     .notification {
-        animation: notification 2s infinite linear alternate;
+        box-shadow: inset 4px 0px 0px 0px gold;
+        /* animation: notification .8s infinite alternate; */
     }
 
-    @keyframes notification {
+    /* @keyframes notification {
         100% {
-            background: red;
+            box-shadow: inset 4px 0px 0px 0px gold;
         }
-    }
-
+    } */
 </style>
