@@ -1,9 +1,11 @@
 <script setup>
   import { ref } from 'vue';
   import router from '../router';
+  import axios from 'axios';
   
   const username = ref('');
   const password = ref('');
+  const email = ref('');
 
 
   function setCookie(name, value, days) {
@@ -20,11 +22,25 @@
   function login() {
     // save user data on the server and reply TRUE if everything is okay 
 
-    const date = Math.floor(Date.now() / 1000);;
+    const userData = {
+      username: username.value,
+      email: email.value,
+      password: password.value
+    };
 
-    setCookie('Auth', username.value+'-'+date, 30);
+    axios.post('http://localhost:8080/register', userData)
+      .then(response => {
+        console.log(response);
+      })
+      .catch(err => {
+        console.log(err);
+      });
 
-    router.push('/');
+    // const date = Math.floor(Date.now() / 1000);
+
+    // setCookie('Auth', username.value+'-'+date, 30);
+
+    // router.push('/');
   }
 
 </script>
@@ -36,6 +52,8 @@
     <form @submit.prevent="login()">
       <label for="name">Name</label>
       <input type="text" name="name" v-model="username" required>
+      <label for="email">Email</label>
+      <input type="email" name="email" v-model="email" required>
       <label for="password">Password</label>
       <input type="password" name="password" v-model="password" required>
       <input type="submit" value="Submit">

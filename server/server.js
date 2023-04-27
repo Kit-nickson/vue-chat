@@ -1,13 +1,17 @@
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const DB = require('./database/db.js');
 
 const httpServer = createServer();
+
+
 const io = new Server(httpServer, { cors: { origin: '*' } });
 
 const usersOnline = {};
 const messages = [];
-
 const privateMessages = {};
+
+
 
 io.on("connection", (socket) => {
 
