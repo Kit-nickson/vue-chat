@@ -6,6 +6,7 @@
   const username = ref('');
   const password = ref('');
   const email = ref('');
+  const error = ref(null);
 
 
   function setCookie(name, value, days) {
@@ -30,10 +31,11 @@
 
     axios.post('http://localhost:8080/register', userData)
       .then(response => {
-        console.log(response);
+        //console.log(response);
       })
       .catch(err => {
-        console.log(err);
+        error.value = err.response.data.message;
+        console.log(err.response.data.message);
       });
 
     // const date = Math.floor(Date.now() / 1000);
@@ -48,6 +50,8 @@
 <template>
   <div class="container">
     <h1>Login</h1>
+
+    <div class="error">{{ error }}</div>
 
     <form @submit.prevent="login()">
       <label for="name">Name</label>
@@ -95,6 +99,13 @@
 
   .container label {
     text-align: left;
+  }
+
+  .error {
+    width: 60%;
+    background: red;
+    border-radius: 4px;
+    margin: 20px auto;
   }
 
 </style>
