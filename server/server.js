@@ -1,6 +1,6 @@
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-const DB = require('./database/db.js');
+//const DB = require('./database/db.js');
 
 const httpServer = createServer();
 

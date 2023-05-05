@@ -4,9 +4,11 @@
   import UsersOnline from '../components/UsersOnline.vue';
   import Chat from '../components/Chat.vue'
   import { socket } from "@/socket";
+  import axios from 'axios';
 
   const currentUserData = ref('');
   const usersOnlineObject = ref({});
+  const token = ref({});
   const messages = ref({});
   const privateMessages = ref({});
   const selectedUser = ref(null);
@@ -19,11 +21,32 @@
   })
   
   function checkAuth() {
-    if (!isUserAuth('Auth')) {
+    if (!isUserAuth('chat_userdata') && !isUserAuth('chat_token')) {
       router.push('login');
     } else {
+
+      // check if cookie userdata is valid
+
       currentUserData.value = getLoggedUser();
-      connectToChat();
+      token.value = getToken();
+
+      console.log(token.value);
+
+      // additionaly send token
+
+      axios.post('http://localhost:8080/check_data', {userdata: currentUserData.value, token: token.value})
+        .then((resp) => {
+          if (resp.data === 'okay') {
+            connectToChat();
+          } else {
+            logoutUser();
+          }
+        })
+        .catch((error) => {
+          console.log(error.data.message);
+        });
+
+
     }
   }
 
@@ -48,16 +71,29 @@
     for(let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
 
-      if (cookie.startsWith('Auth')) {
-        const userDataArray = cookie.substring(5).split('-');
+      if (cookie.startsWith('chat_userdata')) {
+        const userDataArray = cookie.substring(14).split('-');
         return {username: userDataArray[0], userId: userDataArray[1]};
+      }
+    }
+  }
+
+  function getToken() {
+    const cookies = document.cookie.split(';');
+
+    for(let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+
+      if (cookie.startsWith('chat_token')) {
+        return cookie.substring(11);
       }
     }
   }
 
 
   function logoutUser() {
-    document.cookie = "Auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; 
+    document.cookie = "chat_userdata=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "chat_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; 
     
     socket.disconnect();
     checkAuth();

@@ -21,7 +21,9 @@
 
   
   function login() {
-    // save user data on the server and reply TRUE if everything is okay 
+    // save user data on the server and reply TRUE if everything is okay
+    
+    // check if data has been entered
 
     const userData = {
       username: username.value,
@@ -30,8 +32,12 @@
     };
 
     axios.post('http://localhost:8080/register', userData)
-      .then(response => {
-        //console.log(response);
+      .then(resp => {
+        if (resp.data.uuid) {
+          setCookie('chat_userdata', username.value+'-'+resp.data.uuid, 30);
+          setCookie('chat_token', resp.data.token, 30);
+          router.push('/');
+        }
       })
       .catch(err => {
         error.value = err.response.data.message;
