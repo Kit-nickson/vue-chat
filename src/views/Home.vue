@@ -22,29 +22,27 @@
   
   function checkAuth() {
     if (!isUserAuth('chat_userdata') && !isUserAuth('chat_token')) {
-      router.push('login');
+      router.push('register');
     } else {
-
-      // check if cookie userdata is valid
-
       currentUserData.value = getLoggedUser();
       token.value = getToken();
-
-      console.log(token.value);
-
-      // additionaly send token
-
+      
       axios.post('http://localhost:8080/check_data', {userdata: currentUserData.value, token: token.value})
-        .then((resp) => {
-          if (resp.data === 'okay') {
-            connectToChat();
-          } else {
-            logoutUser();
-          }
-        })
-        .catch((error) => {
-          console.log(error.data.message);
-        });
+      .then((resp) => {
+        if (resp.data === 'okay') {
+          connectToChat();
+        } else {
+          logoutUser();
+          
+          router.push('register');
+        }
+      })
+      .catch((error) => {
+        console.log(error.data);
+        logoutUser();
+        
+        router.push('register');
+      });
 
 
     }

@@ -22,6 +22,10 @@ function createUuid(username) {
     return hash;
 }
 
+function encryptPassword(password, salt) {
+    return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+}
+
 const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -69,7 +73,7 @@ const server = http.createServer((req, res) => {
                 } else {
                     db.query('SELECT * FROM users WHERE email = ?', [email], (error, results) => {                      
                         if (results.length > 0) {
-                            res.writeHead(409, { 'Content-Type': 'application/json' });
+                            res.writeHead(403, { 'Content-Type': 'application/json' });
                             res.end(JSON.stringify({ message: 'Email already in use' }));
                             return;
                         }
@@ -88,6 +92,7 @@ const server = http.createServer((req, res) => {
                           
                             res.writeHead(201, { 'Content-Type': 'application/json' });
                             res.end(JSON.stringify({ uuid: uuid, token: token }));
+                            return;
                         });
                     });
                 }
@@ -95,6 +100,55 @@ const server = http.createServer((req, res) => {
         });
     }
 
+    if (req.method === 'POST' && req.url === '/login') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+
+        req.on('end', () => {
+            const data = JSON.parse(body);
+            
+            const name = data.username;
+            const password = data.password;
+            
+            if (!name || !password) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ message: 'Name, email, and password are required' }));
+                return;
+            }
+            
+            db.query('SELECT * FROM users WHERE name = ?', [name], (error, userData) => {
+
+                if (userData.length <= 0) {
+                    res.writeHead(403, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ message: 'Wrong user data' }));
+                    return;
+                }
+
+                if (error) {
+                    console.error(error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ message: 'Server error' }));
+                    return;
+                }
+
+                const encryptedPassword = encryptPassword(password, userData[0].salt);
+                
+                if (userData[0].password === encryptedPassword) {
+                    res.writeHead(201, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ uuid: userData[0].uuid, token: userData[0].token }));
+                    return;
+                } else {
+                    res.writeHead(403, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ message: 'Wrong user data' }));
+                    return;
+                }
+            })
+        })
+    
+        }
+ 
 
     if (req.method === 'POST' && req.url === '/check_data') {
         let body = '';
