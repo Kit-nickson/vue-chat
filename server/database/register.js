@@ -18,7 +18,7 @@ function encryptData(data) {
 
 function createUuid(username) {
     const time = Math.floor(Date.now() / 1000).toString();
-    const hash = crypto.pbkdf2Sync(username, time, 1000, 64, 'sha512').toString('hex');
+    const hash = crypto.pbkdf2Sync(username, time, 1000, 8, 'sha512').toString('hex');
     return hash;
 }
 
