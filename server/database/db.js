@@ -5,7 +5,7 @@ const db = sql.createPool({
     host     : 'localhost',
     user     : 'root',
     password : 'root',
-    database : 'node_db'
+    database : 'chats'
 })
 
 module.exports = db;

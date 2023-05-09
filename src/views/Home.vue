@@ -10,7 +10,7 @@
   const usersOnlineObject = ref({});
   const token = ref({});
   const messages = ref({});
-  const privateMessages = ref({});
+  const privateMessages = ref([]);
   const selectedUser = ref(null);
   const commonId = ref(null);
   const notifications = ref([]);
@@ -21,7 +21,7 @@
   })
   
   function checkAuth() {
-    if (!isUserAuth('chat_userdata') && !isUserAuth('chat_token')) {
+    if (!isUserAuth('chat_userdata') || !isUserAuth('chat_token')) {
       router.push('register');
     } else {
       currentUserData.value = getLoggedUser();
@@ -113,8 +113,19 @@
       });
       
       socket.on('private-message', (privateMessagesData) => {
-        privateMessages.value[privateMessagesData[0]] = privateMessagesData[1];
-      })
+        if (!privateMessages.value[privateMessagesData[0]]) {
+          privateMessages.value[privateMessagesData[0]] = [];
+        }
+        
+        if (privateMessagesData[1].length > 1) {
+          privateMessagesData[1].forEach((item) => {
+            privateMessages.value[privateMessagesData[0]].push([item]);
+          })
+        } else {
+          privateMessages.value[privateMessagesData[0]].push(privateMessagesData[1]);
+        }
+        console.log(privateMessages.value);
+      });
 
       socket.on('notification', (from) => {
         notifications.value.push(from);
@@ -129,7 +140,7 @@
       id: e.target.dataset.id
     }
 
-    commonId.value = [selectedUser.value.id, currentUserData.value.userId].sort().join('-');
+    commonId.value = [selectedUser.value.id, currentUserData.value.userId].sort().join('_');
 
     socket.emit('join-room', commonId.value);
 

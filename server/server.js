@@ -1,6 +1,8 @@
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const db = require('./database/db.js');
+const { promises } = require("dns");
+const { rejects } = require("assert");
 
 const httpServer = createServer();
 
@@ -15,7 +17,7 @@ const privateMessages = {};
 function checkPrivateTable(commonId) {
   return new Promise((resolve, reject) => {
     db.query(
-    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'node_db' AND TABLE_NAME = ?",
+    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'chats' AND TABLE_NAME = ?",
     [commonId], (err, result) => {
         if (err) {
           reject(err);
@@ -44,6 +46,33 @@ function createChatTable(commonId) {
   })
 }
 
+
+function saveMessage(commonId, from, to, message) {
+  return new Promise((resolve, reject) => {
+    db.query('INSERT INTO ' + commonId + ' (`from`, `to`, `message`) VALUES (?, ?, ?)', 
+      [from, to, message], (err, result) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(result);
+        }
+      })
+  });
+}
+
+
+function getMessages(commonId) {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM '+commonId, [], (err, result) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(result);
+      }
+    })
+  });
+}
+
 io.on("connection", (socket) => {
 
   io.emit('message', messages);
@@ -62,12 +91,12 @@ io.on("connection", (socket) => {
 
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
-
-    if (!privateMessages.hasOwnProperty(roomId)) {
-      privateMessages[roomId] = [];
-    }
     
-    io.to(roomId).emit('private-message', [roomId, privateMessages[roomId]]);
+    getMessages(roomId).then((messages) => {
+      io.to(roomId).emit('private-message', [roomId, messages]);
+    }).catch((err) => {
+      console.log(err);
+    });
   })
 
   socket.on('private-message', (message) => {
@@ -80,21 +109,31 @@ io.on("connection", (socket) => {
           createChatTable(commonId)
           .then((created) => {
             if (created) {
-              db.query('INSERT INTO ' + commonId + ' (`from`, `to`, `message`) VALUES (?, ?, ?)', 
-              [message.from.userId, message.to, message.message], (err, result) => {
-                console.log(result);
+              saveMessage(commonId, message.from.userId, message.to, message.message)
+              .then(() => {
+                io.to(commonId).emit('private-message', [commonId, message]);
+                io.to(message.to).emit('notification', message.from.userId);
+              }).catch((err) => {
+                console.log(err);
               })
-              console.log('created');
             }
           }).catch((err) => {
             console.log('error on teble create');
             console.log(err);
           })
         } else {
-          db.query('INSERT INTO ' + commonId + ' (`from`, `to`, `message`) VALUES (?, ?, ?)', 
-              [message.from.userId, message.to, message.message], (err, result) => {
-                console.log(result);
-              })
+          saveMessage(commonId, message.from.userId, message.to, message.message)
+          .then(() => {
+            io.to(commonId).emit('private-message', [commonId, [message]]);
+            io.to(message.to).emit('notification', message.from.userId);
+          }).catch((err) => {
+            console.log(err);
+          })
+
+          // db.query('INSERT INTO ' + commonId + ' (`from`, `to`, `message`) VALUES (?, ?, ?)', 
+              // [message.from.userId, message.to, message.message], (err, result) => {
+                // console.log(result);
+              // })
         }
     }).catch((err) => {
       console.log('error on teble check');
@@ -108,7 +147,6 @@ io.on("connection", (socket) => {
       privateMessages[commonId].push(message);
     }
 
-    io.to(commonId).emit('private-message', [commonId, privateMessages[commonId]]);
     io.to(message.to).emit('notification', message.from.userId);
   })
 

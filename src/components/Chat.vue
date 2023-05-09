@@ -42,7 +42,7 @@
             </div>
 
             <div v-else v-for="message in privateMessages[commonId]">
-                <p><strong>{{ message.from.username }} </strong>: {{ message.message }}</p>
+                <p><strong>{{ message[0].from }} </strong>: {{ message[0].message }}</p>
             </div>
 
         </div>
@@ -70,6 +70,22 @@
     .messages-display {
         flex: 1;
         padding: 10px;
+        overflow-y: scroll;
+        max-height: 79vh;
+    }
+
+    .messages-display::-webkit-scrollbar {
+        width: 0.5em;
+    }
+    
+    .messages-display::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .messages-display::-webkit-scrollbar-thumb {
+        border-radius: 100px;
+        background-color: #112;
+        outline: 1px solid #114;
     }
     
     .write-msg {
