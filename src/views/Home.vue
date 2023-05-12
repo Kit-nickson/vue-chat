@@ -10,7 +10,7 @@
   const usersOnlineObject = ref({});
   const token = ref({});
   const messages = ref({});
-  const privateMessages = ref([]);
+  const privateMessagesLocal = ref([]);
   const selectedUser = ref(null);
   const commonId = ref(null);
   const notifications = ref([]);
@@ -113,18 +113,27 @@
       });
       
       socket.on('private-message', (privateMessagesData) => {
-        if (!privateMessages.value[privateMessagesData[0]]) {
-          privateMessages.value[privateMessagesData[0]] = [];
-        }
         
-        if (privateMessagesData[1].length > 1) {
-          privateMessagesData[1].forEach((item) => {
-            privateMessages.value[privateMessagesData[0]].push([item]);
-          })
-        } else {
-          privateMessages.value[privateMessagesData[0]].push(privateMessagesData[1]);
+        console.log(privateMessagesData);
+
+        if (privateMessagesData[1].length > 0) {
+          if (!privateMessagesLocal.value[privateMessagesData[0]]) {
+            privateMessagesLocal.value[privateMessagesData[0]] = [];
+          }
+
+          if (privateMessagesData[1].length > 1) {
+            privateMessagesLocal.value[privateMessagesData[0]] = privateMessagesData[1];
+          } else {
+              if (privateMessagesLocal.value[privateMessagesData[0]].length === 0) {
+                console.log('zero');
+                privateMessagesLocal.value[privateMessagesData[0]] = privateMessagesData[1];
+              } else {
+                console.log('one');
+                let messageObject = privateMessagesData[1][0]
+                privateMessagesLocal.value[privateMessagesData[0]].push(messageObject);
+              }
+          }       
         }
-        console.log(privateMessages.value);
       });
 
       socket.on('notification', (from) => {
@@ -165,7 +174,7 @@
         />
 
         <Chat v-else 
-          :private-messages="privateMessages" 
+          :private-messages="privateMessagesLocal" 
           :commonId="commonId" 
           :current-user-data="currentUserData" 
           :selected-user="selectedUser" 

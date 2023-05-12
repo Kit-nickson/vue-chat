@@ -23,7 +23,9 @@
             socket.emit('private-message', {
                 message: message.value,
                 from: currentUser.value,
-                to: selectedUser.value.id
+                from_name: currentUser.value.username,
+                to: selectedUser.value,
+                to_name: selectedUser.value.username
             });
         }
         message.value = '';
@@ -42,7 +44,7 @@
             </div>
 
             <div v-else v-for="message in privateMessages[commonId]">
-                <p><strong>{{ message[0].from }} </strong>: {{ message[0].message }}</p>
+                <p><strong>{{ message.from_name }} </strong>: {{ message.message }}</p>
             </div>
 
         </div>
