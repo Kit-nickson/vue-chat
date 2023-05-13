@@ -98,7 +98,7 @@ io.on("connection", (socket) => {
       if (tableExists) {
         // getMessages
         getMessages(roomId).then((messages) => {
-          io.to(roomId).emit('private-message', [roomId, messages]);
+          io.to(roomId).emit('get-private-messages', [roomId, messages]);
         }).catch((err) => {
           console.log(err);
         });

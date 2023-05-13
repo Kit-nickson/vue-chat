@@ -43,8 +43,6 @@
         
         router.push('register');
       });
-
-
     }
   }
 
@@ -113,26 +111,31 @@
       });
       
       socket.on('private-message', (privateMessagesData) => {
-        
-        console.log(privateMessagesData);
 
+        if (!privateMessagesLocal.value[privateMessagesData[0]]) {
+            privateMessagesLocal.value[privateMessagesData[0]] = [];
+        }
+
+        let messageObject = null;
+
+        if (privateMessagesData[1][0]) {
+          messageObject = privateMessagesData[1][0];
+        } else {
+          messageObject = privateMessagesData[1];
+        }
+
+        privateMessagesLocal.value[privateMessagesData[0]].push(messageObject);
+      });
+
+      socket.on('get-private-messages', (privateMessagesData) => {
         if (privateMessagesData[1].length > 0) {
           if (!privateMessagesLocal.value[privateMessagesData[0]]) {
             privateMessagesLocal.value[privateMessagesData[0]] = [];
           }
 
-          if (privateMessagesData[1].length > 1) {
-            privateMessagesLocal.value[privateMessagesData[0]] = privateMessagesData[1];
-          } else {
-              if (privateMessagesLocal.value[privateMessagesData[0]].length === 0) {
-                console.log('zero');
-                privateMessagesLocal.value[privateMessagesData[0]] = privateMessagesData[1];
-              } else {
-                console.log('one');
-                let messageObject = privateMessagesData[1][0]
-                privateMessagesLocal.value[privateMessagesData[0]].push(messageObject);
-              }
-          }       
+          // maybe cache later...
+          
+          privateMessagesLocal.value[privateMessagesData[0]] = privateMessagesData[1];    
         }
       });
 
