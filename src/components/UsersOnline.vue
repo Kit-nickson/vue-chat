@@ -14,18 +14,24 @@
         if (notifications.value.includes(userId)) {
             return 'notification';
         }
+
+        return '';
     }
 
     function showSelectedUser(userId) {
         if (selectedUser.value !== null && selectedUser.value.id === userId) {
             return 'selected-user'
         }
+
+        return '';
     }
 
     function showCurrentUser(userId) {
         if (currentUser.value.userId === userId) {
             return 'current-user'
         }
+
+        return '';
     }
 </script>
 

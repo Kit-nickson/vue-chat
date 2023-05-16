@@ -142,6 +142,10 @@
       socket.on('notification', (from) => {
         notifications.value.push(from);
       })
+
+      socket.on('join-error', () => {
+        router.go(0);
+      })
     })
   }
 
@@ -154,7 +158,7 @@
 
     commonId.value = [selectedUser.value.id, currentUserData.value.userId].sort().join('_');
 
-    socket.emit('join-room', commonId.value);
+    socket.emit('join-room', {commonId: commonId.value, userData: selectedUser.value});
 
     notifications.value = notifications.value.filter(item => item !== selectedUser.value.id)
   }
