@@ -38,6 +38,9 @@
         }
       })
       .catch(err => {
+        username.value = '';
+        password.value = '';
+        email.value = '';
         error.value = err.response.data.message;
         console.log(err.response.data.message);
       });
@@ -56,11 +59,11 @@
 
     <form @submit.prevent="register()">
       <label for="name">Name</label>
-      <input type="text" name="name" v-model="username" required>
+      <input type="text" id="name" v-model="username" required>
       <label for="email">Email</label>
-      <input type="email" name="email" v-model="email" required>
+      <input type="email" id="email" v-model="email" required>
       <label for="password">Password</label>
-      <input type="password" name="password" v-model="password" required>
+      <input type="password" id="password" v-model="password" required>
       <input type="submit" value="Submit">
     </form>
 

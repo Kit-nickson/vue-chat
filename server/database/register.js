@@ -18,8 +18,8 @@ function encryptData(data) {
 
 function createUuid(username) {
     const time = Math.floor(Date.now() / 1000).toString();
-    const hash = crypto.pbkdf2Sync(username, time, 1000, 8, 'sha512').toString('hex');
-    return hash;
+    const hash = crypto.pbkdf2Sync(username, time, 1000, 7, 'sha512').toString('hex');
+    return 'a'+hash;
 }
 
 function encryptPassword(password, salt) {
@@ -163,7 +163,12 @@ const server = http.createServer((req, res) => {
             const uuid = data.userdata.userId;
             const token = data.token;
 
-            
+            if (!name || !uuid || !token) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ message: 'Wrong user data!' }));
+                return;
+            }
+
             db.query('SELECT * FROM users WHERE name = ?', [name], (error, result) => {
                 if (uuid === result[0].uuid && token === result[0].token) {                    
                     res.end('okay');
