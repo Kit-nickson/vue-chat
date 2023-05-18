@@ -22,7 +22,7 @@
   
   function checkAuth() {
     if (!isUserAuth('chat_userdata') || !isUserAuth('chat_token')) {
-      router.push('register');
+      router.push('guest');
     } else {
       currentUserData.value = getLoggedUser();
       token.value = getToken();
@@ -34,14 +34,14 @@
         } else {
           logoutUser();
           
-          router.push('register');
+          router.push('guest');
         }
       })
       .catch((error) => {
         console.log(error.data);
         logoutUser();
         
-        router.push('register');
+        router.push('guest');
       });
     }
   }

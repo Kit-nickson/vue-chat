@@ -1,11 +1,34 @@
 <script setup>
-    import { ref } from 'vue';
+    import { ref, onMounted } from 'vue';
     import axios from 'axios';
     import router from '../router';
 
     const username = ref('');
     const password = ref('');
     const error = ref(null);
+
+    onMounted(() => {
+      checkAuth();
+    });
+
+    function checkAuth() {
+      if (isUserAuth('chat_userdata') || isUserAuth('chat_token')) {
+        router.push('/');
+      }
+    }
+
+    function isUserAuth(name) {
+      const cookies = document.cookie.split(';');
+  
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+      
+        if (cookie.indexOf(name + '=') === 0) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     function setCookie(name, value, days) {
         const date = new Date();
@@ -49,6 +72,7 @@
     <div class="container">
 
     <router-link class="reg-link" to="/register">Register</router-link>
+    <router-link class="reg-link guest-link" to="/guest">Guest Mode</router-link>
 
     <h1>Login</h1>
 
@@ -128,10 +152,15 @@
     border-radius: 4px;
     transition: background .2s;
     z-index: 100;
+    width: 120px;
   }
   .reg-link:hover {
     cursor: pointer;
     background: rgb(255, 229, 83);
+  }
+
+  .guest-link {
+    left: 30px;
   }
 
 </style>
