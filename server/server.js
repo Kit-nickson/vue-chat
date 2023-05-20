@@ -1,10 +1,47 @@
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { users_db, chat_db } = require('./database/db.js');
-const { promises } = require("dns");
-const { rejects } = require("assert");
+const url = require('url');
+const querystring = require('querystring');
 
-const httpServer = createServer();
+const httpServer = createServer((req, res) => {
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+      res.statusCode = 204;
+      res.end();
+      return;
+  }
+
+  const parsedUrl = url.parse(req.url);
+  const queryStr = querystring.parse(parsedUrl.query)
+  
+  if (req.method === 'GET' && parsedUrl.pathname === '/validate_username') {
+    let keys = Object.keys(usersOnline);
+
+    if (keys.length === 0) {
+      res.writeHead(200);
+      res.end('okay');
+      return;
+    } else {
+      keys.forEach(key => {
+        if (usersOnline[key].username.toLowerCase() === queryStr.username.toLowerCase()) {
+          res.writeHead(200, {'Content-Type': 'text/plain'});
+          res.end('Username taken');
+          return;
+        }
+      });
+      if (!res.headersSent) {
+        res.writeHead(200);
+        res.end('okay');
+        return;
+      }
+    }
+  }
+});
 
 
 const io = new Server(httpServer, { cors: { origin: '*' } });

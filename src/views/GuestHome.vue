@@ -1,14 +1,58 @@
 <script setup>
 
-import { onMounted, ref } from 'vue';
+import { onMounted, watch, ref } from 'vue';
 import router from '../router';
+import { socket } from "@/socket";
+import axios from 'axios';
 
 const username = ref('');
 const color = ref('');
+const messages = ref({});
+const usersOnlineObject = ref({});
+const goodUsername = ref(null);
 
 onMounted(() => {
     checkAuth();
 });
+
+
+watch(username, () => {
+    if (username.value === '') {
+        goodUsername.value = null;
+        return;
+    }
+
+    if (!isAlphanumeric(username.value)) {
+        goodUsername.value = false;
+        return;
+    }
+
+    axios.get('http://localhost:3000/validate_username?username='+username.value)
+    .then((res) => {
+        if (res.data === 'okay') {
+            goodUsername.value = true;
+        } else {
+            goodUsername.value = false;
+        }
+    }).catch((err) => {
+        console.log(err);
+    });
+})
+
+function isAlphanumeric(input) {
+  const alphanumericRegex = /^[a-zA-Z0-9]+$/;
+  return alphanumericRegex.test(input);
+}
+
+function isGoodUsername() {
+    if (goodUsername.value === true) {
+        return 'green'
+    } else if (goodUsername.value === false) {
+        return 'red'
+    } else {
+        return '';
+    }
+}
 
 function checkAuth() {
     if (isUserAuth('chat_userdata') || isUserAuth('chat_token')) {
@@ -33,6 +77,23 @@ function setColor(e) {
     color.value = e.target.style.background;
 }
 
+
+function connectGuest() {
+    socket.connect();
+
+    socket.on('connect', () => {
+        socket.emit('user-data', currentUserData.value);
+
+        socket.on('users-online', (usersOnline) => {
+            usersOnlineObject.value = usersOnline;
+        })
+      
+        socket.on('message', (messagesFromSocket) => {
+            messages.value = messagesFromSocket;
+        });
+    })
+}
+
 </script>
 
 <template>
@@ -41,8 +102,8 @@ function setColor(e) {
         <h2>Your name: <span class="username" :style="'color:'+ color">{{ username }}</span></h2>
         <div>
             <div class="guest-input">
-                <input type="text" v-model="username">
-                <button>Connect</button>
+                <input type="text" v-model="username" :class="isGoodUsername()">
+                <button @click="connectGuest()">Connect</button>
             </div>
 
             <div class="name-colors">
@@ -143,6 +204,14 @@ function setColor(e) {
     .reg-link:hover {
         cursor: pointer;
         background: rgb(255, 229, 83);
+    }
+
+    .green {
+        box-shadow: 0 0 3px 3px rgb(0, 255, 13);
+    }
+
+    .red {
+        box-shadow: 0 0 3px 3px rgb(255, 0, 0);
     }
 
 
