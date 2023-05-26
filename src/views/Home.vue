@@ -151,16 +151,19 @@
 
 
   function selectUser(e) {
-    selectedUser.value = {
-      username: e.target.innerText,
-      id: e.target.dataset.id
+    if (e.target.dataset.id !== 'guest') {
+      console.log('test');
+      selectedUser.value = {
+        username: e.target.innerText,
+        id: e.target.dataset.id
+      }
+
+      commonId.value = [selectedUser.value.id, currentUserData.value.userId].sort().join('_');
+
+      socket.emit('join-room', {commonId: commonId.value, userData: selectedUser.value});
+
+      notifications.value = notifications.value.filter(item => item !== selectedUser.value.id)
     }
-
-    commonId.value = [selectedUser.value.id, currentUserData.value.userId].sort().join('_');
-
-    socket.emit('join-room', {commonId: commonId.value, userData: selectedUser.value});
-
-    notifications.value = notifications.value.filter(item => item !== selectedUser.value.id)
   }
 
 </script>

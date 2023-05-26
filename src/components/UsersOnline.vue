@@ -40,8 +40,9 @@
         <h2>Users Online</h2>
         
         <ul v-for="userOnline in usersOnline">
+            <!-- <li @click="$emit('selectUser', $event)"  -->
             <li @click="$emit('selectUser', $event)" 
-                :data-id="userOnline.userId"
+                :data-id="userOnline.userId ? userOnline.userId : 'guest'"
                 :class="showSelectedUser(userOnline.userId) + ' ' + showCurrentUser(userOnline.userId) + ' ' + notification(userOnline.userId)"
                 >
                 {{ userOnline.username }}

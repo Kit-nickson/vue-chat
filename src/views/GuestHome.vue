@@ -79,19 +79,35 @@ function setColor(e) {
 
 
 function connectGuest() {
-    socket.connect();
+    console.log('connecting...');
 
-    socket.on('connect', () => {
-        socket.emit('user-data', currentUserData.value);
+    if (goodUsername.value === true) {
 
-        socket.on('users-online', (usersOnline) => {
-            usersOnlineObject.value = usersOnline;
+        let userData = {
+            username: username.value,
+            color: color.value
+        }
+
+        socket.connect();
+
+        socket.on('connect', () => {
+            socket.emit('guest-user-data', userData);
         })
+    }
+    
+    // socket.connect();
+
+    // socket.on('connect', () => {
+    //     socket.emit('user-data', currentUserData.value);
+
+    //     socket.on('users-online', (usersOnline) => {
+    //         usersOnlineObject.value = usersOnline;
+    //     })
       
-        socket.on('message', (messagesFromSocket) => {
-            messages.value = messagesFromSocket;
-        });
-    })
+    //     socket.on('message', (messagesFromSocket) => {
+    //         messages.value = messagesFromSocket;
+    //     });
+    // })
 }
 
 </script>
@@ -103,7 +119,7 @@ function connectGuest() {
         <div>
             <div class="guest-input">
                 <input type="text" v-model="username" :class="isGoodUsername()">
-                <button @click="connectGuest()">Connect</button>
+                <button @click="connectGuest()" :disabled="goodUsername !== true">Connect</button>
             </div>
 
             <div class="name-colors">
@@ -148,6 +164,7 @@ function connectGuest() {
         flex-direction: column;
         padding: 10px;
         gap: 10px;
+        min-height: 100px;
     }
     .guest-input, input, .guest-input button {
         border: none;
@@ -160,6 +177,11 @@ function connectGuest() {
     .guest-input button {
         background: rgb(51, 161, 58);
         color: white;
+        min-height: 40px;
+    }
+
+    .guest-input button:hover {
+        cursor: pointer;
     }
     
     .name-colors {

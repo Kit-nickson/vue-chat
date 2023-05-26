@@ -20,26 +20,40 @@ const httpServer = createServer((req, res) => {
   const queryStr = querystring.parse(parsedUrl.query)
   
   if (req.method === 'GET' && parsedUrl.pathname === '/validate_username') {
-    let keys = Object.keys(usersOnline);
 
-    if (keys.length === 0) {
-      res.writeHead(200);
-      res.end('okay');
-      return;
-    } else {
-      keys.forEach(key => {
-        if (usersOnline[key].username.toLowerCase() === queryStr.username.toLowerCase()) {
+    checkUsername(queryStr.username)
+    .then((result) => {
+      let keys = Object.keys(usersOnline);
+      
+      if (keys.length === 0 && result.length === 0) {
+        res.writeHead(200);
+        res.end('okay');
+        return;
+      } else {
+        if (result.length > 0) {
           res.writeHead(200, {'Content-Type': 'text/plain'});
           res.end('Username taken');
           return;
         }
-      });
-      if (!res.headersSent) {
-        res.writeHead(200);
-        res.end('okay');
-        return;
+
+        keys.forEach(key => {
+          if (result.length > 0 || usersOnline[key].username.toLowerCase() === queryStr.username.toLowerCase()) {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end('Username taken');
+            return;
+          }
+        });
+
+        if (!res.headersSent) {
+          res.writeHead(200);
+          res.end('okay');
+          return;
+        }
       }
-    }
+
+    }).catch((err) => {
+      console.log(err);
+    });
   }
 });
 
@@ -65,6 +79,17 @@ function chackValidUser(username, uuid) {
   })
 }
 
+function checkUsername (username) {
+  return new Promise((resolve, reject) => {
+    users_db.query('SELECT * FROM users WHERE name = ?', [username], (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  })
+}
 
 function checkPrivateTable(commonId) {
   return new Promise((resolve, reject) => {
@@ -135,6 +160,13 @@ io.on("connection", (socket) => {
     socket.join(data.userId);
     usersOnline[socket.id] = data;
     
+    io.emit('users-online', usersOnline);
+  })
+
+  socket.on('guest-user-data', (data) => {
+    data.username = 'Guest-'+data.username;
+    usersOnline[socket.id] = data;
+
     io.emit('users-online', usersOnline);
   })
 
